@@ -124,3 +124,4 @@ dmypy.json
 # Pyre type checker
 .pyre/
 CW_guidelines_707.pdf
+notes.ipynb

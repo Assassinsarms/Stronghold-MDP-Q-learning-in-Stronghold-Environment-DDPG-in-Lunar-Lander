@@ -1,13 +1,14 @@
 import numpy as np
-import sys
 import matplotlib.pyplot as plt
+import sys
+import time
 np.set_printoptions(threshold=sys.maxsize, linewidth=sys.maxsize, precision = 2)
 
 class Stronghold(): 
-    def __init__(self, size):
+    def __init__(self, size, simplicity):
         self.size = size
         self.actions = {0: 'Up', 1: 'Down', 2: 'Left', 3: 'Right'}
-        self.land = self.env_gen()
+        self.land = self.env_gen(simplicity)
         self.position_agent = None                                 # initial position of the agent will be decided by resetting the environment
         self.time_elapsed = 0                                      # run time
         self.time_limit = self.size**2
@@ -24,7 +25,7 @@ class Stronghold():
                                 4:'E',          # enemy
                                 5:'I'}          # intelligence
                     
-    def env_gen(self):
+    def env_gen(self, simplicity):
         land = np.zeros((self.size, self.size))
         land[0,:] = 1                                               # establish the river
         land[:,0] = 1
@@ -36,13 +37,13 @@ class Stronghold():
             land[1:self.size-1, 0] = 1                                        # establish the walls of stronghold
             for col in land[1:self.size-1, self.column_choice+2:self.size-1].T:
                 traps = []
-                for i in range(int(np.round(1/4*len(col)))):        # make as many traps as 1/4 of the length of each column in the shore
+                for i in range(int(np.round(1/simplicity*len(col)))):        # make as many traps as 1/simplicity of the length of each column in the shore
                     trap = np.random.choice(np.setdiff1d(range(len(col)), traps))
                     col[trap] = 3
                     traps.append(trap)
             for col in land[1:self.size-1, 1:self.column_choice].T:
                 enemies = []
-                for i in range(int(np.round(1/5*len(col)))):        # populate enemies randomly inside the stronghold
+                for i in range(int(np.round(1/simplicity*len(col)))):        # populate enemies randomly inside the stronghold
                     enemy = np.random.choice(np.setdiff1d(range(len(col)), enemies))
                     col[enemy] = 4
                     enemies.append(enemy)
@@ -54,13 +55,13 @@ class Stronghold():
             land[1:self.size-1, self.size-1] = 1                            # establish the walls of stronghold
             for col in land[1:self.size-1, 1:self.column_choice-1].T:
                 traps = []
-                for i in range(int(np.round(1/4*len(col)))):        # make as many traps as 1/4 of the length of each column in the shore
+                for i in range(int(np.round(1/simplicity*len(col)))):        # make as many traps as 1/simplicity of the length of each column in the shore
                     trap = np.random.choice(np.setdiff1d(range(len(col)), traps))
                     col[trap] = 3
                     traps.append(trap)
             for col in land[1:self.size-1, self.column_choice+1:self.size-1].T:
                 enemies = []
-                for i in range(int(np.round(1/5*len(col)))):        # populate enemies randomly inside the stronghold
+                for i in range(int(np.round(1/simplicity*len(col)))):        # populate enemies randomly inside the stronghold
                     enemy = np.random.choice(np.setdiff1d(range(len(col)), enemies))
                     col[enemy] = 4
                     enemies.append(enemy)
@@ -69,7 +70,7 @@ class Stronghold():
             land[intel_row+1, self.column_choice+intel_col] = 5
             self.position_intel = [intel_row+1, self.column_choice+intel_col]             # randomly insert intelligence into stronghold
         entrances = []
-        for i in range(int(np.round(1/4*len(land[2:self.size-2, self.column_choice])))):        # make as many entrances as 1/4 of the length of the front wall 
+        for i in range(int(np.round(((1/2)*len(land[2:self.size-2, self.column_choice]))))):        # make as many entrances as 1/2 of the length of the front wall 
             entrance = np.random.choice(np.setdiff1d(range(len(land[2:self.size-2, self.column_choice])), entrances))
             land[2:self.size-2, self.column_choice][entrance] = 0
             entrances.append(entrance)
@@ -183,18 +184,13 @@ class Stronghold():
                 self.land[i, j] = 0
                 self.land[i, j+1] = 4
 
-        #print(action)
-        current_position = np.array((self.position_agent[0], self.position_agent[1])) # saving the current position and state in case agent hits a wall
-        current_state = self.agent_state
-        #print(current_state)                                              
-        options = self.getSuccessors(current_state, action)                           # chosen action gets 0.7 prob 
+        current_position = np.array((self.position_agent[0], self.position_agent[1]))   # saving the current position and state in case agent hits a wall
+        current_state = self.agent_state 
+        options = self.getSuccessors(self.agent_state, action)                           # chosen action gets 0.7 prob - self.agent_state is set by the reset method
         if np.size(options) != 1:
-            #print(options)
             probs = [i[1] for i in options]                                               #  list of probabilities
-            #print(probs)
             choice = np.random.choice((0, 1, 2, 3), p=probs)                              #  make a probability choice
             state_choice = options[choice][0]
-            #print(self.P[self.agent_state][action])                                        
             ind = np.where(self.P[self.agent_state][action][:][:] == state_choice)[0][0]
             prob, new_state, reward, done = self.P[self.agent_state][action][ind]    # new prob, state, reward, done for the choice                 
 
@@ -219,15 +215,14 @@ class Stronghold():
                 done = True
                 print ('Time ran out')
             else:
-                self.time_elapsed += 1                                                  # update time
-                     
-        # self.render()                                                             # update visualisation
+                self.time_elapsed += 1                                                  # update time                   
         return (int(new_state), reward, done, {"prob" : prob})                      # return state, reward, done, info
 
     def reset(self):
         self.time_elapsed = 0                                              # put time_elapsed to 0
         self.position_agent = np.asarray(self.normal_shore(1))             # position of the agent is a random cell on the shore
         self.agent_state = self.to_state(self.position_agent[0], self.position_agent[1])
+        self.starting_pos = self.position_agent
         return self.agent_state                                         # return current state as observation
 
     def render(self):                                                       # display
@@ -243,20 +238,20 @@ class Stronghold():
         for i in range(len(envir_with_agent)):                              # loop over data dimensions and create text annotations
             for j in range(len(envir_with_agent)):
                 if envir_with_agent[i, j] == 0:
-                    text = ""
+                    caption = ""
                 elif envir_with_agent[i, j] == 1:
-                    text = "X"
+                    caption = "X"
                 elif envir_with_agent[i, j] == 2:
-                    text = "A"
+                    caption = "A"
                 elif envir_with_agent[i, j] == 3:
-                    text = "T"
+                    caption = "T"
                 elif envir_with_agent[i, j] == 4:
-                    text = "E"
+                    caption = "E"
                 elif envir_with_agent[i, j] == 5:
-                    text = "I"
+                    caption = "I"
                 else:
-                    text = ""    
-                text_cell = ax.text(j, i, text, ha="center", va="center", color="r", fontsize='xx-large')
+                    caption = ""    
+                text_cell = ax.text(j, i, caption, ha="center", va="center", color="r", fontsize='xx-large')
 
         ax.set_title("Stronghold", fontsize=15) # 35 for 10x10 
         fig.tight_layout()

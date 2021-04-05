@@ -108,7 +108,7 @@ class Stronghold():
                     elif number == 5: # intelligence
                         trans_prob.append((1.0, s, 0, True))
                         self.transitionProb[a, s, self.numStates] = 1.0
-                        self.transitionReward[s, a] = 1000
+                        self.transitionReward[s, a] = 2000
                     else:
                         for b, p in zip([a, (a+1)%4, (a+2)%4, (a+3)%4], self.prob_of_tripping):
                             newrow, newcol = self.inc(row, col, b)
@@ -120,7 +120,7 @@ class Stronghold():
                             elif newnumber == 4:                # if enemy kills
                                 rew = -1000
                             elif newnumber == 5:                # if intelligence is caught
-                                rew = 1000
+                                rew = 2000
                             else:
                                 rew = -1                        # penalty for time-step               
                             trans_prob.append((p, newstate, rew, done))

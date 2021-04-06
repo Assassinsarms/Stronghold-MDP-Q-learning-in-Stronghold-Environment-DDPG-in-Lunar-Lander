@@ -28,7 +28,7 @@ class Agent():
 
     def Qlearn(self):
         total_rewards = []                                      # holds the total rewards for the evaluation of the q-learning
-        eps_decay = []
+        #eps_decay = []                                         # <- uncomment to see the epsilon decay
         for batch in range(self.episodes//self.learning_len):   # learning occurs for learning_len number of episodes every 
             for learn in range(self.learning_len):
                 current_state = self.env.reset()
@@ -48,10 +48,10 @@ class Agent():
                     if done == True:
                         break 
                 self.epsilon *= 0.99                                         # ε decay to encourage mainly exploitation at some point
+                #eps_decay.append(self.epsilon)                             # <- uncomment to see the epsilon decay
             avg_reward = self.evaluate_policy(self.greedy_policy, self.episodes, self.view) # run evaluation using ε greedy policy according to q_table
             total_rewards.append(avg_reward)
-            eps_decay.append(self.epsilon)
-        return total_rewards, self.q_table, eps_decay 
+        return total_rewards, self.q_table#, eps_decay              # <- uncomment to see the epsilon decay 
 
     def evaluate_policy(self, policy, episodes, view = False):  # evaluates the ε greedy policy after exploration/exploitation/training
         total_evaluation_reward = 0
@@ -116,8 +116,6 @@ class Agent():
                     sign = '<'
                 elif best_action[i, j] == 3:
                     sign = '>'
-                if i == self.env.starting_pos[0] and j == self.env.starting_pos[1]:
-                    sign = 'S '
                 text = ax.text(j, i, sign, ha = "center", va = "center", color = "black", fontsize='x-large')
                 
         cbar = ax.figure.colorbar(im, ax = ax, fraction=0.046, pad=0.04)

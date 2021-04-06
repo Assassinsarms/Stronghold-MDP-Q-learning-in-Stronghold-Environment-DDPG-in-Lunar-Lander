@@ -118,7 +118,7 @@ class Agent():
                     sign = '>'
                 text = ax.text(j, i, sign, ha = "center", va = "center", color = "black", fontsize='x-large')
                 
-        cbar = ax.figure.colorbar(im, ax = ax, fraction=0.046, pad=0.04)
+        cbar = ax.figure.colorbar(im, ax = ax, fraction= 0.046, pad = 0.04)
         fig.tight_layout()
         plt.show(); 
 

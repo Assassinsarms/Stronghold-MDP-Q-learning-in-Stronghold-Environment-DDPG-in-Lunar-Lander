@@ -208,7 +208,6 @@ def ddpg_train_val(env_fn, seed=0, steps_per_epoch=4000, epochs=5, replay_size=i
             val_ep_rews, val_ep_lens, avg_rew, avg_len = test_agent(test_env, agent, num_val_episodes, max_ep_len)
             val_ep_rews_arr.append(val_ep_rews)
             val_ep_lens_arr.append(val_ep_lens)
-            print("Epoch: {:.0f}, Training Average Reward: {:.0f}, Training Average Length: {:.0f}".format(epoch, np.mean(ep_rews), np.mean(ep_lens)))
-            print("Epoch: {:.0f}, Val Average Reward: {:.0f}, Val Average Length: {:.0f}".format(epoch, avg_rew, avg_len))
+            print("Epoch: {:.0f}, Training Average Reward: {:.0f}, Training Average Length: {:.0f}, Val Average Reward: {:.0f}, Val Average Length: {:.0f}".format(epoch, np.mean(ep_rews), np.mean(ep_lens), avg_rew, avg_len))
             ep_rews, ep_lens = [], []
     return agent, q_optimizer, policy_optimizer, val_ep_rews_arr, val_ep_lens_arr

@@ -4,9 +4,9 @@ import pandas as pd
 import pickle
 import time
 from IPython.display import clear_output
-
-# A class to represent policies the agent can take and evaluation of those policies 
+ 
 class Agent():
+    # A class to represent policies the agent can take and evaluation of those policies
     def __init__(self, env, epsilon, lr, episodes, learning_len = 100, discount_factor = 0.999, mode='Train', view=False):
         self.env = env
         self.epsilon = epsilon
@@ -19,7 +19,8 @@ class Agent():
         self.state_space = self.env.getStateSpace()
         print('The number of actions possible are,', self.action_space)
         print('The number of states in the environment are,', self.state_space)
-        self.q_table = np.zeros((self.state_space, self.action_space))          # initialising state-action values in q-table to 0 
+        self.q_table = np.zeros((self.state_space, self.action_space))          
+        # initialising state-action values in q-table to 0 
         self.step_max = 1000
         self.view = view
 
@@ -27,14 +28,17 @@ class Agent():
         return np.argmax(self.q_table[current_state,:])
 
     def Qlearn(self):
-        total_rewards = []                                      # holds the total rewards for the evaluation of the q-learning
-        #eps_decay = []                                         # <- uncomment to see the epsilon decay
-        for batch in range(self.episodes//self.learning_len):   # learning occurs for learning_len number of episodes every 
+        total_rewards = []                                      
+        # holds the total rewards for the evaluation of the q-learning
+        # eps_decay = []         # <- uncomment to see the epsilon decay
+        for batch in range(self.episodes//self.learning_len):   
+            # learning occurs for learning_len number of episodes in a batch 
             for learn in range(self.learning_len):
                 current_state = self.env.reset()
                 for steps in range(self.step_max):
                     if self.mode == 'Train':
-                        if np.random.uniform(0, 1) >= self.epsilon:         #  random choice between exploration (random action) or exploitation (ε-greedy policy)
+                        if np.random.uniform(0, 1) >= self.epsilon:         
+                            #  random choice between exploration (random action) or exploitation (ε-greedy policy)
                             choice_action = self.greedy_policy(current_state)
                         else: choice_action = np.random.randint(0, self.action_space - 1)
                     else:
@@ -47,13 +51,19 @@ class Agent():
                         current_state = state
                     if done == True:
                         break 
-                self.epsilon *= 0.99                                         # ε decay to encourage mainly exploitation at some point
-                #eps_decay.append(self.epsilon)                             # <- uncomment to see the epsilon decay
-            avg_reward = self.evaluate_policy(self.greedy_policy, self.episodes, self.view) # run evaluation using ε greedy policy according to q_table
+                self.epsilon *= 0.99       # ε decay to encourage mainly exploitation at some point
+                # eps_decay.append(self.epsilon)   
+                # # ^- uncomment to see the epsilon decay
+            avg_reward = self.evaluate_policy(self.greedy_policy, self.episodes, self.view) 
+            # run evaluation using ε greedy policy according to q_table
             total_rewards.append(avg_reward)
-        return total_rewards, self.q_table#, eps_decay              # <- uncomment to see the epsilon decay 
+            # if learning_len is 1000 and num episodes is 10000, this holds 10 values which are
+            # the average reward per 10000 episodes where 1000 of those episodes were for
+            # learning 
+        return total_rewards, self.q_table#, eps_decay  # <- uncomment to see the epsilon decay 
 
-    def evaluate_policy(self, policy, episodes, view = False):  # evaluates the ε greedy policy after exploration/exploitation/training
+    def evaluate_policy(self, policy, episodes, view = False):  
+        # evaluates the ε greedy policy after exploration/exploitation/training
         total_evaluation_reward = 0
         for i in range(episodes):
             self.env.reset()

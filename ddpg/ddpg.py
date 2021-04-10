@@ -15,6 +15,8 @@ from copy import deepcopy
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 class Actor(nn.Module):
+    # a 2 hidden layer network which takes states as input and produces action within
+    # the allowed range 
     def __init__(self, state_dim, act_dim, act_limit):
         super().__init__()
         self.act_limit = act_limit
@@ -33,6 +35,8 @@ class Actor(nn.Module):
         return x
 
 class Critic(nn.Module):
+    # a 2 hidden layer network that takes a state and action and produces a
+    # Q value as output
     def __init__(self, state_dim, act_dim):
         super().__init__()
         self.fc1 = nn.Linear(state_dim + act_dim, 256)
@@ -49,6 +53,7 @@ class Critic(nn.Module):
         return torch.squeeze(q, -1)
 
 class ActorCritic(nn.Module):
+    # combining the actor and critic into one model
     def __init__(self, observation_space, action_space):
         super().__init__()
         self.state_dim = observation_space.shape[0]
@@ -74,9 +79,11 @@ class ReplayBuffer:
         self.next_id = 0
     
     def __len__(self):
+        # returns number of elements in buffer
         return len(self.buffer)
     
     def add(self, state, action, reward, next_state, done):
+        # saves the (s,a,r,s',done) tuple into the buffer
         item = (state, action, reward, next_state, done)
         if len(self.buffer) < self.size:
             self.buffer.append(item)
@@ -85,12 +92,13 @@ class ReplayBuffer:
         self.next_id = (self.next_id + 1) % self.size
         
     def sample(self, batch_size=32):
+        # returns states, actions, rewards, next_states and done_flags for batch_size random samples
         idxs = np.random.choice(len(self.buffer), batch_size)
         samples = [self.buffer[i] for i in idxs]
         states, actions, rewards, next_states, done_flags = list(zip(*samples))
         return np.array(states), np.array(actions), np.array(rewards), np.array(next_states), np.array(done_flags)
 
-def compute_q_loss(agent, target_network, states, actions, rewards, next_states, done_flags,
+def q_loss(agent, target_network, states, actions, rewards, next_states, done_flags,
                     gamma=0.99): 
     states = torch.tensor(states, dtype=torch.float).to(DEVICE)            # convert numpy array to torch tensors
     actions = torch.tensor(actions, dtype=torch.float).to(DEVICE)
@@ -108,7 +116,7 @@ def compute_q_loss(agent, target_network, states, actions, rewards, next_states,
     return loss_q
 
 
-def compute_policy_loss(agent, states):
+def policy_loss(agent, states):
     states = torch.tensor(states, dtype=torch.float).to(DEVICE)         # convert numpy array to torch tensors
     predicted_qvalues = agent.q(states, agent.policy(states)).to(DEVICE)
     loss_policy = - predicted_qvalues.mean()
@@ -117,9 +125,8 @@ def compute_policy_loss(agent, states):
 
 def one_step_update(agent, target_network, q_optimizer, policy_optimizer, states, actions, rewards, next_states, done_flags,
                     gamma=0.99, polyak=0.995):
-    
     q_optimizer.zero_grad()     # one step gradient for q-values
-    loss_q = compute_q_loss(agent, target_network, states, actions, rewards, next_states, done_flags,
+    loss_q = q_loss(agent, target_network, states, actions, rewards, next_states, done_flags,
                     gamma)
     loss_q.backward()
     q_optimizer.step()
@@ -127,8 +134,8 @@ def one_step_update(agent, target_network, q_optimizer, policy_optimizer, states
     for params in agent.q.parameters():  # freeze Q-network
         params.requires_grad = False
 
-    policy_optimizer.zero_grad()   # one setep gradient for policy network
-    loss_policy = compute_policy_loss(agent, states)
+    policy_optimizer.zero_grad()   # one step gradient for policy network
+    loss_policy = policy_loss(agent, states)
     loss_policy.backward()
     policy_optimizer.step()
    
@@ -141,6 +148,7 @@ def one_step_update(agent, target_network, q_optimizer, policy_optimizer, states
             params_target.data.add_((1-polyak)*params.data)
 
 def test_agent(env, agent, num_test_episodes, max_ep_len):
+    # test function
     ep_rews, ep_lens = [], []
     for j in range(num_test_episodes):
         state, done, ep_rew, ep_len = env.reset(), False, 0, 0
@@ -155,7 +163,6 @@ def test_agent(env, agent, num_test_episodes, max_ep_len):
 
 def ddpg_train_val(env_fn, seed=0, steps_per_epoch=4000, epochs=5, replay_size=int(1e6), gamma=0.99, polyak=0.995, 
         policy_lr=1e-3, q_lr=1e-3, batch_size=100, start_steps=10000, update_after=1000, update_every=50, act_noise=0.1, num_val_episodes=10, max_ep_len=1000):
-    
     torch.manual_seed(seed)
     np.random.seed(seed)
     env, test_env = env_fn(), env_fn()

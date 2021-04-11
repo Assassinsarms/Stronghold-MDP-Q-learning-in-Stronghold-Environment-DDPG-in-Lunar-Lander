@@ -161,7 +161,7 @@ def test_agent(env, agent, num_test_episodes, max_ep_len):
     return ep_rews, ep_lens, np.mean(ep_rews), np.mean(ep_lens)
 
 
-def ddpg_train_val(env_fn, seed=0, steps_per_epoch=4000, epochs=5, replay_size=int(1e6), gamma=0.99, polyak=0.995, 
+def ddpg_train_val(env_fn, seed=0, steps_per_epoch=4000, epochs=10, replay_size=int(1e6), gamma=0.99, polyak=0.995, 
         policy_lr=1e-3, q_lr=1e-3, batch_size=100, start_steps=10000, update_after=1000, update_every=50, act_noise=0.1, num_val_episodes=10, max_ep_len=1000):
     torch.manual_seed(seed)
     np.random.seed(seed)

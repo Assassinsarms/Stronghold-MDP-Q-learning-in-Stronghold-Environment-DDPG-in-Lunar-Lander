@@ -1,6 +1,16 @@
 # INM707_Coursework
  Reinforcement Learning Coursework
 
+### Dependencies:
+
+Python: 3.8.7 (tags/v3.8.7:6503f05, Dec 21 2020, 17:59:51)
+
+Numpy Version: 1.19.5
+
+PyTorch Version: 1.7.1+cu110
+
+Pandas Version: 1.2.1
+
 ## Task 1: 
 
 In Task 1, a reinforcement learning environment known as Stronghold was created and modelled according to Markov Decision Process (MDP). The basic idea is that an agent is to infiltrate an enemy stronghold to gather intelligence. My inspiration for this environment was the video game ‘Hitman’ in which an assassin infiltrates various enemy territory to assassinate various targets. In this environment, the goal of the agent is less gruesome but the main idea is the same. 

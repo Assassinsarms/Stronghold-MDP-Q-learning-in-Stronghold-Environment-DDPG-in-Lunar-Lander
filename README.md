@@ -11,6 +11,8 @@ PyTorch Version: 1.7.1+cu110
 
 Gym Version: 0.18.0
 
+Scipy Version: 1.6.0
+
 Pandas Version: 1.2.1
 
 Matplotlib Version: 3.3.3

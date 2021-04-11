@@ -11,6 +11,8 @@ PyTorch Version: 1.7.1+cu110
 
 Pandas Version: 1.2.1
 
+Matplotlib Version: 3.3.3
+
 ## Task 1: 
 
 In Task 1, a reinforcement learning environment known as Stronghold was created and modelled according to Markov Decision Process (MDP). The basic idea is that an agent is to infiltrate an enemy stronghold to gather intelligence. My inspiration for this environment was the video game ‘Hitman’ in which an assassin infiltrates various enemy territory to assassinate various targets. In this environment, the goal of the agent is less gruesome but the main idea is the same. 
